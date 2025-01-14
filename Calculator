@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حسابگر.js</title>
+  <script src="https://unpkg.com/vue@3"></script>
+  <style>
+    /* Reset CSS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent; /* حذف لایه آبی در موبایل */
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    #app {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+    }
+
+    .operator-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    .operator-buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      color: #333;
+      transition: all 0.3s ease;
+      user-select: none; /* جلوگیری از انتخاب متن */
+      outline: none; /* حذف outline در حالت فعال */
+    }
+
+    .operator-buttons button.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .operator-buttons button:not(.active):hover {
+      background-color: #ddd;
+    }
+
+    button.calculate {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      user-select: none; /* جلوگیری از انتخاب متن */
+      outline: none; /* حذف outline در حالت فعال */
+    }
+
+    button.calculate:hover {
+      background: linear-gradient(135deg, #764ba2, #667eea);
+    }
+
+    h2 {
+      font-size: 22px;
+      color: #333;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+
+    .error {
+      color: #ff4d4d;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      input, .operator-buttons button, button.calculate {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+
+    /* حذف کامل حالت فعال (:active) */
+    button:active, button:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>حسابگر</h1>
+    <div>
+      <input v-model.number="number1" type="number" placeholder="عدد اول">
+      <div class="operator-buttons">
+        <button
+          v-for="op in operators"
+          :key="op"
+          @click="operator = op"
+          :class="{ active: operator === op }"
+        >
+          {{ op }}
+        </button>
+      </div>
+      <input v-model.number="number2" type="number" placeholder="عدد دوم">
+    </div>
+    <button class="calculate" @click="calculate">محاسبه</button>
+    <h2 :class="{ error: result === 'خطا: تقسیم بر صفر' }">نتیجه: {{ result }}</h2>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          number1: null, // مقدار اولیه خالی
+          number2: null, // مقدار اولیه خالی
+          operator: '+', // عملگر پیش‌فرض
+          operators: ['+', '-', '×', '÷'], // لیست عملگرها
+          result: null, // مقدار اولیه خالی
+        };
+      },
+      methods: {
+        calculate() {
+          // اگر یکی از inputها خالی باشد، نتیجه را محاسبه نکن
+          if (this.number1 === null || this.number2 === null) {
+            this.result = 'لطفاً هر دو عدد را وارد کنید';
+            return;
+          }
+
+          switch (this.operator) {
+            case '+':
+              this.result = this.number1 + this.number2;
+              break;
+            case '-':
+              this.result = this.number1 - this.number2;
+              break;
+            case '×':
+              this.result = this.number1 * this.number2;
+              break;
+            case '÷':
+              this.result = this.number2 !== 0 ? this.number1 / this.number2 : 'خطا: تقسیم بر صفر';
+              break;
+            default:
+              this.result = 'خطا: عملگر نامعتبر';
+          }
+        },
+      },
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>
